@@ -4,9 +4,11 @@ require 'yaml'
 
 # Converts tabular data between storage formats
 class FlipFlap
+
   # Do NOT create an initialize method
-  include TsvBuddy
   include YamlBuddy
+  include TsvBuddy
+
   attr_reader :data
 
   def self.input_formats

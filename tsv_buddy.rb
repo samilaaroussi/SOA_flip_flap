@@ -1,59 +1,30 @@
-# Module that can be included (mixin) to take and output TSV data
+# Module that can be included (mixin) to create and parse TSV data
 module TsvBuddy
-  # take_tsv: converts a String with TSV data into @data
-  # parameter: tsv - a String in TSV format
+  # @data should be a data structure that stores information
+  #  from TSV or Yaml files. For example, it could be an Array of Hashes.
   attr_accessor :data
 
+  # take_tsv: converts a String with TSV data into @data
+  # parameter: tsv - a String in TSV format
   def take_tsv(tsv)
-     tsv_arr, data = [], []
+    data_arr = []
+    tsv_arr = tsv.lines
+    header_arr = tsv_arr[0].chomp("\n").split("\t")
 
-     # Per row
-     r = tsv.split("\n");
+    (1..tsv_arr.size - 1).each do |i|
+      row_info = tsv_arr[i].chomp("\n").split("\t")
+      data_arr << (header_arr.zip(row_info)).to_h
+    end
+    @data = data_arr
+  end
 
-     r.each do |e|
-       tsv_arr.push(e.split("\t"));
-     end
-
-     field = tsv_arr.shift
-
-     # Transfer tsv into field => value
-     tsv_arr.each do |row|
-         hash = {}
-
-         row.each_with_index do |conlumn, i|
-             hash[field[i]] = conlumn
-         end
-
-         data.push(hash)
-     end
-
-     @data = data
-   end
-
-   # to_tsv: converts @data into tsv string
-   # returns: String in TSV format
-   def to_tsv
-     yaml = @data
-     separator = {:tab => "\t", :newline => "\n"}
-     field = []
-
-     yaml[0].each do |k, v|
-         field.push(k)
-     end
-
-     data = [field.join(separator[:tab])]
-
-     yaml.each do |e|
-         str = []
-
-         e.each do |k, v|
-             str.push(v)
-         end
-
-         data.push(str.join(separator[:tab]))
-     end
-
-     data.push('').join(separator[:newline])
-   end
-
- end
+  # to_tsv: converts @data into tsv string
+  # returns: String in TSV format
+  def to_tsv
+    tsv = @data[0].keys.join("\t") + "\n"
+    @data.each do |hash|
+      tsv += hash.values.join("\t") + "\n"
+    end
+    tsv
+  end
+end
